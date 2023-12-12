@@ -5,6 +5,7 @@ import com.example.demo.dto.UserResponseDTO;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.UserEntity;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.UserService;
 import com.example.demo.specification.UserSpecifications;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,47 +30,37 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
     private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, UserService userService,PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
 
+//    Get all user not use filter
     @GetMapping("/all")
     public ResponseEntity<ResponseObject> getAllUsers() {
-        List<UserEntity> userEntities = userRepository.findAll();
-        List<UserResponseDTO> userDTOList = userEntities.stream()
-                .map(userEntity -> new UserResponseDTO(
-                        userEntity.getId(),
-                        userEntity.getName(),
-                        userEntity.getMobilePhone(),
-                        userEntity.getEmail(),
-                        userEntity.getRole()
-                        // Add any other fields you need, excluding the password
-                ))
-                .collect(Collectors.toList());
+        List<UserResponseDTO> userDTOList = userService.findAllUser();
         return new ResponseEntity<>(new ResponseObject("success", "Users retrieved successfully", userDTOList), HttpStatus.OK);
     }
 
+
+//    Create user
     @PostMapping("/create")
     public ResponseEntity<ResponseObject> createUser(@RequestBody UserEntity userEntity){
         try {
-            log.debug("create user: {}", userEntity.getId());
-            String hashedPassword = passwordEncoder.encode(userEntity.getPassword());
-            userEntity.setRole(Role.MEMBER);
-            userEntity.setPassword(hashedPassword);
-            userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
-
-            userRepository.save(userEntity);
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("success", "User created successfully", null));
+            UserResponseDTO userResponseDTO = userService.saveUser(userEntity);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("success", "User created successfully", userResponseDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseObject("error", "Internal Server Error: " + e.getMessage(), null)
             );        }
     }
 
+//    Auth login
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> loginUser(@RequestBody UserEntity loginUser) {
         try {
@@ -107,6 +98,7 @@ public class UserController {
         }
     }
 
+//    Update user data
     @PutMapping("/update/{userId}")
     public ResponseEntity<ResponseObject> updateUser(@PathVariable Long userId, @RequestBody UserEntity updatedUser) {
         try {
@@ -139,6 +131,7 @@ public class UserController {
         }
     }
 
+//    Delete user
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<ResponseObject> deleteUser(@PathVariable Long userId) {
         try {
@@ -162,6 +155,7 @@ public class UserController {
         }
     }
 
+//    Get all user using filter
     @GetMapping("/getUser")
     public ResponseEntity<ResponseObject> getUserByFilter(
             @RequestParam(required = false) Long id,
@@ -173,37 +167,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size
     ) {
         try {
-            // Build a specification based on the filter criteria
-            Specification<UserEntity> specification = Specification.where(null);
-
-            if (id != null) {
-                specification = specification.and(UserSpecifications.idPartialMatch(String.valueOf(id)));
-            }
-
-            if (name != null && !name.isEmpty()) {
-                specification = specification.and(UserSpecifications.nameLike(name));
-            }
-
-            if (phoneNumber != null && !phoneNumber.isEmpty()) {
-                specification = specification.and(UserSpecifications.phoneNumberLike(phoneNumber));
-            }
-
-            if (fromDate != null && toDate != null) {
-                specification = specification.and(UserSpecifications.dateBetween(fromDate, toDate));
-            }
-            Pageable pageable = PageRequest.of(page, size);
-            Page<UserEntity> userEntitiesPage = userRepository.findAll(specification,pageable);
-
-            List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
-                    .map(userEntity -> new UserResponseDTO(
-                            userEntity.getId(),
-                            userEntity.getName(),
-                            userEntity.getMobilePhone(),
-                            userEntity.getEmail(),
-                            userEntity.getRole()
-                            // Add any other fields you need, excluding the password
-                    ))
-                    .collect(Collectors.toList());
+            List<UserResponseDTO> userDTOList = userService.findAllUserFilter(id,name, phoneNumber, fromDate, toDate, page, size);
             return new ResponseEntity<>(new ResponseObject("success", "Users retrieved successfully", userDTOList), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
