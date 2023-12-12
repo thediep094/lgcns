@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
+
 @Entity
 @Table(name = "user")
 @Data
@@ -19,5 +21,6 @@ public class UserEntity {
     private String mobilePhone;
     private String email;
     private Role role;
+    private Date date;
 
 }

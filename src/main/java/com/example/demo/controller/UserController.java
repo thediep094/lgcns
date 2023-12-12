@@ -5,13 +5,20 @@ import com.example.demo.dto.UserResponseDTO;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.UserEntity;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.specification.UserSpecifications;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,6 +60,8 @@ public class UserController {
             String hashedPassword = passwordEncoder.encode(userEntity.getPassword());
             userEntity.setRole(Role.MEMBER);
             userEntity.setPassword(hashedPassword);
+            userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
+
             userRepository.save(userEntity);
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("success", "User created successfully", null));
         } catch (Exception e) {
@@ -152,5 +161,56 @@ public class UserController {
             );
         }
     }
+
+    @GetMapping("/getUser")
+    public ResponseEntity<ResponseObject> getUserByFilter(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+            // Build a specification based on the filter criteria
+            Specification<UserEntity> specification = Specification.where(null);
+
+            if (id != null) {
+                specification = specification.and(UserSpecifications.idPartialMatch(String.valueOf(id)));
+            }
+
+            if (name != null && !name.isEmpty()) {
+                specification = specification.and(UserSpecifications.nameLike(name));
+            }
+
+            if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                specification = specification.and(UserSpecifications.phoneNumberLike(phoneNumber));
+            }
+
+            if (fromDate != null && toDate != null) {
+                specification = specification.and(UserSpecifications.dateBetween(fromDate, toDate));
+            }
+            Pageable pageable = PageRequest.of(page, size);
+            Page<UserEntity> userEntitiesPage = userRepository.findAll(specification,pageable);
+
+            List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
+                    .map(userEntity -> new UserResponseDTO(
+                            userEntity.getId(),
+                            userEntity.getName(),
+                            userEntity.getMobilePhone(),
+                            userEntity.getEmail(),
+                            userEntity.getRole()
+                            // Add any other fields you need, excluding the password
+                    ))
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(new ResponseObject("success", "Users retrieved successfully", userDTOList), HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", "Internal Server Error: " + e.getMessage(), null)
+            );
+        }
+    }
+
 
 }
