@@ -1,19 +1,26 @@
-package com.example.demo.dto;
+package com.example.demo.model.entity;
 
-import com.example.demo.entity.Role;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import java.sql.Date;
+
+@Entity
+@Table(name = "user")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-public class UserResponseDTO {
+public class UserEntity {
+
+    @Id
     private Long id;
+    private String password;
     private String name;
     private String mobilePhone;
     private String email;
     private Role role;
+    private Date date;
+
 }

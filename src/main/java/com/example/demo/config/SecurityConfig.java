@@ -29,12 +29,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/**"))
                 .authorizeRequests((requests) -> requests
                         .requestMatchers("/**").permitAll()
-                )
-                .formLogin((form) -> form
-                        .loginPage("/login")
-                        .permitAll()
-                )
-                .logout((logout) -> logout.permitAll());
+                );
         return http.build();
     }
     @Bean
