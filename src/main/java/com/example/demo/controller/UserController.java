@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.common.ResponseObject;
+import com.example.demo.model.dto.UserDataResponseDTO;
 import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.UserEntity;
@@ -9,6 +10,7 @@ import com.example.demo.service.iml.UserServiceIml;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -96,7 +98,7 @@ public class UserController {
     }
 
 //    Get all user using filter
-    @GetMapping("/getUser")
+    @PostMapping("/getUser")
     public ResponseEntity<ResponseObject> getUserByFilter(
             @RequestParam(required = false) Long id,
             @RequestParam(required = false) String name,
@@ -106,12 +108,16 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(defaultValue = "asc") String sortOrder
+            @RequestParam(defaultValue = "asc", required = false) String sortOrder
 
     ) {
         try {
-            List<UserResponseDTO> userDTOList = userServiceIml.findAllUserFilter(id,name, phoneNumber, fromDate, toDate, page, size,sortBy, sortOrder);
-            return new ResponseEntity<>(new ResponseObject("success", "Users retrieved successfully", userDTOList), HttpStatus.OK);
+            Page<UserResponseDTO> userDTOPage = userServiceIml.findAllUserFilter(id, name, phoneNumber, fromDate, toDate, page, size, sortBy, sortOrder);
+            List<UserResponseDTO> userDTOList = userDTOPage.getContent();
+            long totalPage = userDTOPage.getTotalPages();
+
+            UserDataResponseDTO userDataResponseDTO = new UserDataResponseDTO(userDTOList, totalPage);
+            return new ResponseEntity<>(new ResponseObject("success", "Users retrieved successfully", userDataResponseDTO), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseObject("error", "Internal Server Error: " + e.getMessage(), null)
@@ -119,7 +125,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/exportToExcel")
+    @PostMapping("/exportToExcel")
     public ResponseEntity<String> exportToExcel(HttpServletResponse response,
                                                 @RequestParam(required = false) Long id,
                                                 @RequestParam(required = false) String name,
@@ -132,7 +138,7 @@ public class UserController {
                                                 @RequestParam(defaultValue = "asc") String sortOrder
                                                 ) {
         try {
-            List<UserResponseDTO> users =  userServiceIml.findAllUserFilter(id,name, phoneNumber, fromDate, toDate, page, size,sortBy, sortOrder);
+            Page<UserResponseDTO> users =  userServiceIml.findAllUserFilter(id,name, phoneNumber, fromDate, toDate, page, size,sortBy, sortOrder);
             exportExcelIml.exportToExcel(users, response);
             return ResponseEntity.ok("Excel export successful");
         } catch (IOException e) {

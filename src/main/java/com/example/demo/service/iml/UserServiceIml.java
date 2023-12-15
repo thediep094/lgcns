@@ -9,10 +9,7 @@ import com.example.demo.service.service.UserService;
 import com.example.demo.specification.UserSpecifications;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -171,7 +168,7 @@ public class UserServiceIml implements UserService {
         }
     }
 
-    public List<UserResponseDTO> findAllUserFilter(
+    public Page<UserResponseDTO> findAllUserFilter(
             Long id,
             String name,
             String phoneNumber,
@@ -181,7 +178,7 @@ public class UserServiceIml implements UserService {
             int size,
             String sortBy,
             String sortOrder
-    ){
+    ) {
         // Build a specification based on the filter criteria
         Specification<UserEntity> specification = Specification.where(null);
 
@@ -200,9 +197,16 @@ public class UserServiceIml implements UserService {
         if (fromDate != null && toDate != null) {
             specification = specification.and(UserSpecifications.dateBetween(fromDate, toDate));
         }
-        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<UserEntity> userEntitiesPage = userRepository.findAll(specification,pageable);
+
+        Pageable pageable;
+        if(sortBy == null) {
+            pageable = PageRequest.of(page, size);
+        } else {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+            pageable = PageRequest.of(page, size, sort);
+        }
+
+        Page<UserEntity> userEntitiesPage = userRepository.findAll(specification, pageable);
 
         List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
                 .map(userEntity -> new UserResponseDTO(
@@ -215,8 +219,10 @@ public class UserServiceIml implements UserService {
                         // Add any other fields you need, excluding the password
                 ))
                 .collect(Collectors.toList());
-        return userDTOList;
+
+        return new PageImpl<>(userDTOList, pageable, userEntitiesPage.getTotalElements());
     }
+
 
 
 

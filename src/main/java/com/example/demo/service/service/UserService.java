@@ -2,6 +2,7 @@ package com.example.demo.service.service;
 
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.UserEntity;
+import org.springframework.data.domain.Page;
 
 import java.util.Date;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 public interface UserService {
     List<UserResponseDTO> findAllUser();
     UserResponseDTO saveUser(UserEntity userEntity) throws Exception;
-    List<UserResponseDTO> findAllUserFilter(
+    Page<UserResponseDTO> findAllUserFilter(
             Long id,
             String name,
             String phoneNumber,
