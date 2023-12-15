@@ -33,7 +33,7 @@ public class ExportExcelIml implements ExportExcelService {
         int rowNum = 1;
         for (UserResponseDTO user : users) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(user.getId());
+            row.createCell(0).setCellValue(user.getUserId());
             row.createCell(1).setCellValue(user.getName());
             row.createCell(2).setCellValue(user.getMobilePhone());
             row.createCell(3).setCellValue(user.getEmail());

@@ -13,7 +13,7 @@ import java.sql.Date;
 @Getter
 @Setter
 public class UserResponseDTO {
-    private Long id;
+    private Long userId;
     private String name;
     private String mobilePhone;
     private String email;

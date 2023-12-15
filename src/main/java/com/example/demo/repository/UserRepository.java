@@ -4,6 +4,10 @@ import com.example.demo.model.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
-    UserEntity findTopById(Long id);
+    UserEntity findTopByUserId(Long userId);
+    Optional<UserEntity> findByUserId(Long userId);
+    void deleteByUserId(Long userId);
 }

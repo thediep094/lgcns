@@ -64,7 +64,7 @@ public class UserServiceIml implements UserService {
         List<UserEntity> userEntities = userRepository.findAll();
         List<UserResponseDTO> userDTOList = userEntities.stream()
                 .map(userEntity -> new UserResponseDTO(
-                        userEntity.getId(),
+                        userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
@@ -95,10 +95,10 @@ public class UserServiceIml implements UserService {
     }
 
     public UserResponseDTO deleteUserById(Long userId) throws Exception {
-        Optional<UserEntity> optionalUser = userRepository.findById(userId);
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
 
         if (optionalUser.isPresent()) {
-            userRepository.deleteById(userId);
+            userRepository.deleteByUserId(userId);
             UserEntity existingUser = optionalUser.get();
             avatarServiceIml.deleteAllAvatarByUserId(userId);
             return new UserResponseDTO(existingUser.getId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
@@ -111,7 +111,7 @@ public class UserServiceIml implements UserService {
     public UserLoginResponseDTO saveUser(UserEntity userEntity) throws Exception{
         log.debug("create user: {}", userEntity.getId());
 
-        Optional<UserEntity> optionalUser = userRepository.findById(userEntity.getId());
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userEntity.getId());
         if(optionalUser.isPresent()) {
             throw new Exception("Already have this user");
         }
@@ -143,7 +143,7 @@ public class UserServiceIml implements UserService {
 
     @Override
     public UserLoginResponseDTO loginUser(UserEntity loginUser) throws Exception {
-        Optional<UserEntity> optionalUser = userRepository.findById(loginUser.getId());
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(loginUser.getId());
         if (optionalUser.isPresent()) {
             UserEntity user = optionalUser.get();
             if (passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
