@@ -12,9 +12,9 @@ public class UserSpecifications {
                 criteriaBuilder.equal(root.get("id"), id);
     }
 
-    public static Specification<UserEntity> idPartialMatch(String partialId) {
+    public static Specification<UserEntity> userIdPartialMatch(String userId) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get("id").as(String.class), "%" + partialId + "%");
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("userId").as(String.class)), "%" + userId.toLowerCase() + "%");
     }
     public static Specification<UserEntity> nameLike(String name) {
         return (root, query, criteriaBuilder) ->

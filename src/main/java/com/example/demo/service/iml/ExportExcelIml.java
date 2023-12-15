@@ -23,7 +23,7 @@ public class ExportExcelIml implements ExportExcelService {
 
         // Create a header row
         Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("ID");
+        headerRow.createCell(0).setCellValue("UserId");
         headerRow.createCell(1).setCellValue("Name");
         headerRow.createCell(2).setCellValue("Mobile Phone");
         headerRow.createCell(3).setCellValue("Email");

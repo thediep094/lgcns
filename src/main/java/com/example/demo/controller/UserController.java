@@ -100,7 +100,7 @@ public class UserController {
 //    Get all user using filter
     @PostMapping("/getUser")
     public ResponseEntity<ResponseObject> getUserByFilter(
-            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String mobilePhone,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -112,7 +112,7 @@ public class UserController {
 
     ) {
         try {
-            Page<UserResponseDTO> userDTOPage = userServiceIml.findAllUserFilter(id, name, mobilePhone, fromDate, toDate, page, size, sortBy, sortOrder);
+            Page<UserResponseDTO> userDTOPage = userServiceIml.findAllUserFilter(userId, name, mobilePhone, fromDate, toDate, page, size, sortBy, sortOrder);
             List<UserResponseDTO> userDTOList = userDTOPage.getContent();
             long totalPage = userDTOPage.getTotalPages();
 
@@ -127,7 +127,7 @@ public class UserController {
 
     @PostMapping("/exportToExcel")
     public ResponseEntity<String> exportToExcel(HttpServletResponse response,
-                                                @RequestParam(required = false) Long id,
+                                                @RequestParam(required = false) Long userId,
                                                 @RequestParam(required = false) String name,
                                                 @RequestParam(required = false) String mobilePhone,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -138,7 +138,7 @@ public class UserController {
                                                 @RequestParam(defaultValue = "asc", required = false) String sortOrder
                                                 ) {
         try {
-            List<UserResponseDTO> users =  userServiceIml.findAllUserFilterExport(id,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
+            List<UserResponseDTO> users =  userServiceIml.findAllUserFilterExport(userId,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
             exportExcelIml.exportToExcel(users, response);
             return ResponseEntity.ok("Excel export successful");
         } catch (IOException e) {
