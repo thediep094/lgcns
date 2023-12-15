@@ -21,9 +21,9 @@ public class UserSpecifications {
                 criteriaBuilder.like(root.get("name"), "%" + name + "%");
     }
 
-    public static Specification<UserEntity> phoneNumberLike(String phoneNumber) {
+    public static Specification<UserEntity> mobilePhoneLike(String mobilePhone) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get("phoneNumber"), "%" + phoneNumber + "%");
+                criteriaBuilder.like(root.get("mobilePhone"), "%" + mobilePhone + "%");
     }
 
     public static Specification<UserEntity> dateBetween(Date fromDate, Date toDate) {

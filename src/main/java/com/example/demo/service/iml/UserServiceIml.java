@@ -171,7 +171,7 @@ public class UserServiceIml implements UserService {
     public Page<UserResponseDTO> findAllUserFilter(
             Long id,
             String name,
-            String phoneNumber,
+            String mobilePhone,
             Date fromDate,
             Date toDate,
             int page,
@@ -190,8 +190,8 @@ public class UserServiceIml implements UserService {
             specification = specification.and(UserSpecifications.nameLike(name));
         }
 
-        if (phoneNumber != null && !phoneNumber.isEmpty()) {
-            specification = specification.and(UserSpecifications.phoneNumberLike(phoneNumber));
+        if (mobilePhone != null && !mobilePhone.isEmpty()) {
+            specification = specification.and(UserSpecifications.mobilePhoneLike(mobilePhone));
         }
 
         if (fromDate != null && toDate != null) {
