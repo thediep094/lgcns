@@ -7,4 +7,6 @@ import java.util.List;
 public interface AvatarService {
     List<String> updateAvatar(Long userId, MultipartFile[] files) throws Exception;
     void deleteAllAvatarByUserId(Long userId);
+    String saveStaterImage(Long userId);
+
 }

@@ -1,5 +1,6 @@
 package com.example.demo.service.iml;
 
+import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.Role;
 import com.example.demo.model.entity.UserEntity;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,10 +28,39 @@ public class UserServiceIml implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final AvatarServiceIml avatarServiceIml;
+
     @Autowired
-    public UserServiceIml(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceIml(UserRepository userRepository, PasswordEncoder passwordEncoder,  AvatarServiceIml avatarServiceIml) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.avatarServiceIml = avatarServiceIml;
+    }
+
+    private void validatePassword(String password) throws Exception {
+        // Password must have at least 8 characters
+        if (password.length() < 8) {
+            throw new Exception("Password must have at least 8 characters");
+        }
+
+        // Password must have at least 2 combinations if length is less than 8, or 3 combinations if length is less than 10
+        if (password.length() < 8 && !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&*]).+$")) {
+            throw new Exception("Password must have at least 2 combinations: letters, numbers, or special characters");
+        }
+
+        if (password.length() < 10 && !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&*]).+$")) {
+            throw new Exception("Password must have at least 3 combinations: letters, numbers, or special characters");
+        }
+
+        // Special characters allowed are @#$%^&*
+        if (!password.matches("^[a-zA-Z0-9@#$%^&*]+$")) {
+            throw new Exception("Password can only contain letters, numbers, and the special characters @#$%^&*");
+        }
+
+        // Consecutive numbers must not be more than 3 characters
+        if (password.matches(".*\\d{4,}.*")) {
+            throw new Exception("Consecutive numbers must not be more than 3 characters");
+        }
     }
 
     public List<UserResponseDTO> findAllUser() {
@@ -40,7 +71,7 @@ public class UserServiceIml implements UserService {
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
-                        userEntity.getRole()
+                        userEntity.getRole(), userEntity.getDate()
                         // Add any other fields you need, excluding the password
                 ))
                 .collect(Collectors.toList());
@@ -56,10 +87,9 @@ public class UserServiceIml implements UserService {
             existingUser.setName(updatedUser.getName());
             existingUser.setMobilePhone(updatedUser.getMobilePhone());
             existingUser.setEmail(updatedUser.getEmail());
-
             // Save the updated user
             userRepository.save(existingUser);
-            UserResponseDTO userResponseDTO = new UserResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole());
+            UserResponseDTO userResponseDTO = new UserResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate());
            return userResponseDTO;
         } else {
             // User not found
@@ -73,40 +103,64 @@ public class UserServiceIml implements UserService {
         if (optionalUser.isPresent()) {
             userRepository.deleteById(userId);
             UserEntity existingUser = optionalUser.get();
-
-            return new UserResponseDTO(existingUser.getId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole());
+            avatarServiceIml.deleteAllAvatarByUserId(userId);
+            return new UserResponseDTO(existingUser.getId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
         } else {
             // User not found
             throw new Exception("User nor found");
         }
     }
 
-    public UserResponseDTO saveUser(UserEntity userEntity) {
+    public UserLoginResponseDTO saveUser(UserEntity userEntity) throws Exception{
         log.debug("create user: {}", userEntity.getId());
+
+        Optional<UserEntity> optionalUser = userRepository.findById(userEntity.getId());
+        if(optionalUser.isPresent()) {
+            throw new Exception("Already have this user");
+        }
+
+        // Check if the name is a single word containing only letters
+        if (!userEntity.getName().matches("^[a-zA-Z ]+$")) {
+            throw new Exception("Name must be a single word containing only letters");
+        }
+
+        if(String.valueOf(userEntity.getId()).length() < 4) {
+            throw new Exception("Id must be at least 4 digits long");
+        }
+
+        if (!userEntity.getMobilePhone().matches("\\d+")) {
+            throw new Exception("Mobile phone number can only contain numbers");
+        }
+
+        validatePassword(userEntity.getPassword());
+
         String hashedPassword = passwordEncoder.encode(userEntity.getPassword());
         userEntity.setRole(Role.MEMBER);
         userEntity.setPassword(hashedPassword);
         userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
         userRepository.save(userEntity);
-
-        UserResponseDTO userResponseDTO = new UserResponseDTO(userEntity.getId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole());
-        return userResponseDTO;
+        String avatar = avatarServiceIml.saveStaterImage(userEntity.getId());
+        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
+        return userLoginResponseDTO;
     }
 
     @Override
-    public UserResponseDTO loginUser(UserEntity loginUser) throws Exception {
+    public UserLoginResponseDTO loginUser(UserEntity loginUser) throws Exception {
         Optional<UserEntity> optionalUser = userRepository.findById(loginUser.getId());
         if (optionalUser.isPresent()) {
             UserEntity user = optionalUser.get();
             if (passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
-                UserResponseDTO userResponseDTO = new UserResponseDTO(
+                String avatar = avatarServiceIml.findUrlAvatarUser(loginUser.getId());
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
                         user.getId(),
                         user.getName(),
                         user.getMobilePhone(),
                         user.getEmail(),
-                        user.getRole()
+                        user.getRole(),
+                        user.getDate(),
+                        avatar
                 );
-                return userResponseDTO;
+                return userLoginResponseDTO;
             } else {
                 // Passwords do not match
                 throw new Exception("Login failed: Incorrect password");
@@ -124,7 +178,9 @@ public class UserServiceIml implements UserService {
             Date fromDate,
             Date toDate,
             int page,
-            int size
+            int size,
+            String sortBy,
+            String sortOrder
     ){
         // Build a specification based on the filter criteria
         Specification<UserEntity> specification = Specification.where(null);
@@ -144,7 +200,8 @@ public class UserServiceIml implements UserService {
         if (fromDate != null && toDate != null) {
             specification = specification.and(UserSpecifications.dateBetween(fromDate, toDate));
         }
-        Pageable pageable = PageRequest.of(page, size);
+        Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<UserEntity> userEntitiesPage = userRepository.findAll(specification,pageable);
 
         List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
@@ -153,7 +210,8 @@ public class UserServiceIml implements UserService {
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
-                        userEntity.getRole()
+                        userEntity.getRole(),
+                        userEntity.getDate()
                         // Add any other fields you need, excluding the password
                 ))
                 .collect(Collectors.toList());

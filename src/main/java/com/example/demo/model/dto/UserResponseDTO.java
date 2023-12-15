@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -16,4 +18,6 @@ public class UserResponseDTO {
     private String mobilePhone;
     private String email;
     private Role role;
+    private Date date;
+
 }

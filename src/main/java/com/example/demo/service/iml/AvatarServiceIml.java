@@ -33,6 +33,21 @@ public class AvatarServiceIml implements AvatarService {
         avatarRepository.deleteAll(avatars);
     }
 
+    public String findUrlAvatarUser(Long userId) {
+        log.debug("Request to find one avatar by userId: {}", userId);
+        Avatar avatar = avatarRepository.findTopByUserId(userId);
+        return avatar.getUrl();
+    }
+
+    public String saveStaterImage(Long userId) {
+        log.debug("Request to save one avatar for userId stater: {}", userId);
+        Avatar avatar = new Avatar();
+        avatar.setUserId(userId);
+        avatar.setUrl("user.jpg");
+        Avatar responseAvatar = avatarRepository.save(avatar);
+        return responseAvatar.getUrl();
+    }
+
     @Override
     public List<String> updateAvatar(Long userId, MultipartFile[] files) {
         String imageUploadDirectory = "src/main/resources/images";
