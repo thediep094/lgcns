@@ -224,6 +224,56 @@ public class UserServiceIml implements UserService {
     }
 
 
+    public List<UserResponseDTO> findAllUserFilterExport(
+            Long id,
+            String name,
+            String mobilePhone,
+            Date fromDate,
+            Date toDate,
+            int page,
+            int size,
+            String sortBy,
+            String sortOrder
+    ) {
+        // Build a specification based on the filter criteria
+        Specification<UserEntity> specification = Specification.where(null);
+
+        if (id != null) {
+            specification = specification.and(UserSpecifications.idPartialMatch(String.valueOf(id)));
+        }
+
+        if (name != null && !name.isEmpty()) {
+            specification = specification.and(UserSpecifications.nameLike(name));
+        }
+
+        if (mobilePhone != null && !mobilePhone.isEmpty()) {
+            specification = specification.and(UserSpecifications.mobilePhoneLike(mobilePhone));
+        }
+
+        if (fromDate != null && toDate != null) {
+            specification = specification.and(UserSpecifications.dateBetween(fromDate, toDate));
+        }
+        List<UserEntity> userEntities;
+        if(sortBy == null) {
+            userEntities = userRepository.findAll(specification);
+        } else {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+            userEntities = userRepository.findAll(specification, sort);
+        }
+
+        List<UserResponseDTO> userDTOList = userEntities.stream()
+                .map(userEntity -> new UserResponseDTO(
+                        userEntity.getId(),
+                        userEntity.getName(),
+                        userEntity.getMobilePhone(),
+                        userEntity.getEmail(),
+                        userEntity.getRole(),
+                        userEntity.getDate()
+                        // Add any other fields you need, excluding the password
+                ))
+                .collect(Collectors.toList());
+        return userDTOList;
+    }
 
 
 }

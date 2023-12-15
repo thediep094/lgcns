@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 public class ExportExcelIml implements ExportExcelService {
-    public void exportToExcel(Page<UserResponseDTO> users, HttpServletResponse response) throws IOException {
+    public void exportToExcel(List<UserResponseDTO> users, HttpServletResponse response) throws IOException {
         // Create a new workbook
         Workbook workbook = new XSSFWorkbook();
         // Create a sheet within the workbook
@@ -31,7 +31,7 @@ public class ExportExcelIml implements ExportExcelService {
 
         // Populate data rows
         int rowNum = 1;
-        for (UserResponseDTO user : users.getContent()) {
+        for (UserResponseDTO user : users) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(user.getId());
             row.createCell(1).setCellValue(user.getName());

@@ -132,13 +132,13 @@ public class UserController {
                                                 @RequestParam(required = false) String mobilePhone,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate,
-                                                @RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "10") int size,
+                                                @RequestParam(defaultValue = "0",required = false) int page,
+                                                @RequestParam(defaultValue = "10", required = false) int size,
                                                 @RequestParam(required = false) String sortBy,
                                                 @RequestParam(defaultValue = "asc", required = false) String sortOrder
                                                 ) {
         try {
-            Page<UserResponseDTO> users =  userServiceIml.findAllUserFilter(id,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
+            List<UserResponseDTO> users =  userServiceIml.findAllUserFilterExport(id,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
             exportExcelIml.exportToExcel(users, response);
             return ResponseEntity.ok("Excel export successful");
         } catch (IOException e) {

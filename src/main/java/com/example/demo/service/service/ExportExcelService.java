@@ -8,5 +8,5 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ExportExcelService {
-    void exportToExcel(Page<UserResponseDTO> users, HttpServletResponse response) throws IOException;
+    void exportToExcel(List<UserResponseDTO> users, HttpServletResponse response) throws IOException;
 }
