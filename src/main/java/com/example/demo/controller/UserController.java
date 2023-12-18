@@ -67,13 +67,29 @@ public class UserController {
         }
     }
 
+    //   Get User
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<ResponseObject> getUserByAdmin(@RequestBody UserEntity userEntity, @PathVariable Long userId) {
+        try {
+            UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserById(userEntity.getUserId(), userId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("success", "Login successful", userLoginResponseDTO)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", e.getMessage(), null)
+            );
+        }
+    }
+
+
 //    Update user data
     @PutMapping("/update/{userId}")
     public ResponseEntity<ResponseObject> updateUser(@PathVariable Long userId, @RequestBody UserEntity updatedUser) {
         try {
-            UserResponseDTO userResponseDTO = userServiceIml.findUserById(userId, updatedUser);
+            UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserByIdAndUpdate(userId, updatedUser);
              return ResponseEntity.status(HttpStatus.OK).body(
-                    new ResponseObject("success", "Update user successfully", userResponseDTO)
+                    new ResponseObject("success", "Update user successfully", userLoginResponseDTO)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
@@ -100,7 +116,7 @@ public class UserController {
 //    Get all user using filter
     @PostMapping("/getUser")
     public ResponseEntity<ResponseObject> getUserByFilter(
-            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String mobilePhone,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -112,7 +128,7 @@ public class UserController {
 
     ) {
         try {
-            Page<UserResponseDTO> userDTOPage = userServiceIml.findAllUserFilter(id, name, mobilePhone, fromDate, toDate, page, size, sortBy, sortOrder);
+            Page<UserResponseDTO> userDTOPage = userServiceIml.findAllUserFilter(userId, name, mobilePhone, fromDate, toDate, page, size, sortBy, sortOrder);
             List<UserResponseDTO> userDTOList = userDTOPage.getContent();
             long totalPage = userDTOPage.getTotalPages();
 
@@ -127,7 +143,7 @@ public class UserController {
 
     @PostMapping("/exportToExcel")
     public ResponseEntity<String> exportToExcel(HttpServletResponse response,
-                                                @RequestParam(required = false) Long id,
+                                                @RequestParam(required = false) Long userId,
                                                 @RequestParam(required = false) String name,
                                                 @RequestParam(required = false) String mobilePhone,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -138,7 +154,7 @@ public class UserController {
                                                 @RequestParam(defaultValue = "asc", required = false) String sortOrder
                                                 ) {
         try {
-            List<UserResponseDTO> users =  userServiceIml.findAllUserFilterExport(id,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
+            List<UserResponseDTO> users =  userServiceIml.findAllUserFilterExport(userId,name, mobilePhone, fromDate, toDate, page, size,sortBy, sortOrder);
             exportExcelIml.exportToExcel(users, response);
             return ResponseEntity.ok("Excel export successful");
         } catch (IOException e) {

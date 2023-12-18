@@ -7,6 +7,7 @@ import com.example.demo.model.entity.UserEntity;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.service.UserService;
 import com.example.demo.specification.UserSpecifications;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -60,11 +61,39 @@ public class UserServiceIml implements UserService {
         }
     }
 
+    public UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception{
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional2User = userRepository.findByUserId(findUserId);
+        if (optionalUser.isPresent() && optional2User.isPresent()) {
+            UserEntity adminUser = optionalUser.get();
+            UserEntity findUser = optional2User.get();
+            if (adminUser.getRole().equals(Role.ADMIN)) {
+                String avatar = avatarServiceIml.findUrlAvatarUser(findUserId);
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
+                        findUser.getUserId(),
+                        findUser.getName(),
+                        findUser.getMobilePhone(),
+                        findUser.getEmail(),
+                        findUser.getRole(),
+                        findUser.getDate(),
+                        avatar
+                );
+                return userLoginResponseDTO;
+            } else {
+                // Passwords do not match
+                throw new Exception("Get user failed: You are not admin");
+            }
+        } else {
+            // User not found
+            throw new Exception("Login failed: User not found");
+        }
+    }
+
     public List<UserResponseDTO> findAllUser() {
         List<UserEntity> userEntities = userRepository.findAll();
         List<UserResponseDTO> userDTOList = userEntities.stream()
                 .map(userEntity -> new UserResponseDTO(
-                        userEntity.getId(),
+                        userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
@@ -75,43 +104,52 @@ public class UserServiceIml implements UserService {
         return userDTOList;
     }
 
-    public UserResponseDTO findUserById(Long userId, UserEntity updatedUser) throws Exception{
-        Optional<UserEntity> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isPresent()) {
-            UserEntity existingUser = optionalUser.get();
-
+    public UserLoginResponseDTO findUserByIdAndUpdate(Long userId, UserEntity updatedUser) throws Exception{
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional2User = userRepository.findByUserId(updatedUser.getUserId());
+        if (optionalUser.isPresent() && optional2User.isPresent()) {
+            UserEntity fromUser = optionalUser.get();
+            UserEntity existingUser = optional2User.get();
             // Update fields based on your requirements
-            existingUser.setName(updatedUser.getName());
-            existingUser.setMobilePhone(updatedUser.getMobilePhone());
-            existingUser.setEmail(updatedUser.getEmail());
-            // Save the updated user
-            userRepository.save(existingUser);
-            UserResponseDTO userResponseDTO = new UserResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate());
-           return userResponseDTO;
+            if(fromUser.getRole().equals(Role.ADMIN) || existingUser.getUserId().equals(userId) ) {
+
+                existingUser.setRole(updatedUser.getRole());
+                existingUser.setName(updatedUser.getName());
+                existingUser.setMobilePhone(updatedUser.getMobilePhone());
+                existingUser.setEmail(updatedUser.getEmail());
+                // Save the updated user
+                userRepository.save(existingUser);
+                String avatar = avatarServiceIml.findUrlAvatarUser(userId);
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate(), avatar);
+                return userLoginResponseDTO;
+            } else {
+                throw new Exception("You are not admin or not your account to update!");
+            }
         } else {
             // User not found
            throw new Exception("User not found");
         }
     }
-
+    @Transactional
     public UserResponseDTO deleteUserById(Long userId) throws Exception {
-        Optional<UserEntity> optionalUser = userRepository.findById(userId);
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
 
         if (optionalUser.isPresent()) {
-            userRepository.deleteById(userId);
+            userRepository.deleteByUserId(userId);
             UserEntity existingUser = optionalUser.get();
             avatarServiceIml.deleteAllAvatarByUserId(userId);
-            return new UserResponseDTO(existingUser.getId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
+            return new UserResponseDTO(existingUser.getUserId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
         } else {
             // User not found
             throw new Exception("User nor found");
         }
     }
 
+    @Transactional
     public UserLoginResponseDTO saveUser(UserEntity userEntity) throws Exception{
-        log.debug("create user: {}", userEntity.getId());
+        log.debug("create user: {}", userEntity.getUserId());
 
-        Optional<UserEntity> optionalUser = userRepository.findById(userEntity.getId());
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userEntity.getUserId());
         if(optionalUser.isPresent()) {
             throw new Exception("Already have this user");
         }
@@ -121,7 +159,7 @@ public class UserServiceIml implements UserService {
             throw new Exception("Name must be a single word containing only letters");
         }
 
-        if(String.valueOf(userEntity.getId()).length() < 4) {
+        if(String.valueOf(userEntity.getUserId()).length() < 4) {
             throw new Exception("Id must be at least 4 digits long");
         }
 
@@ -136,20 +174,20 @@ public class UserServiceIml implements UserService {
         userEntity.setPassword(hashedPassword);
         userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
         userRepository.save(userEntity);
-        String avatar = avatarServiceIml.saveStaterImage(userEntity.getId());
-        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
+        String avatar = avatarServiceIml.saveStaterImage(userEntity.getUserId());
+        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getUserId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
         return userLoginResponseDTO;
     }
 
     @Override
     public UserLoginResponseDTO loginUser(UserEntity loginUser) throws Exception {
-        Optional<UserEntity> optionalUser = userRepository.findById(loginUser.getId());
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(loginUser.getUserId());
         if (optionalUser.isPresent()) {
             UserEntity user = optionalUser.get();
             if (passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
-                String avatar = avatarServiceIml.findUrlAvatarUser(loginUser.getId());
+                String avatar = avatarServiceIml.findUrlAvatarUser(loginUser.getUserId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
-                        user.getId(),
+                        user.getUserId(),
                         user.getName(),
                         user.getMobilePhone(),
                         user.getEmail(),
@@ -169,7 +207,7 @@ public class UserServiceIml implements UserService {
     }
 
     public Page<UserResponseDTO> findAllUserFilter(
-            Long id,
+            Long userId,
             String name,
             String mobilePhone,
             Date fromDate,
@@ -182,8 +220,8 @@ public class UserServiceIml implements UserService {
         // Build a specification based on the filter criteria
         Specification<UserEntity> specification = Specification.where(null);
 
-        if (id != null) {
-            specification = specification.and(UserSpecifications.idPartialMatch(String.valueOf(id)));
+        if (userId != null) {
+            specification = specification.and(UserSpecifications.userIdPartialMatch(String.valueOf(userId)));
         }
 
         if (name != null && !name.isEmpty()) {
@@ -210,7 +248,7 @@ public class UserServiceIml implements UserService {
 
         List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
                 .map(userEntity -> new UserResponseDTO(
-                        userEntity.getId(),
+                        userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
@@ -225,7 +263,7 @@ public class UserServiceIml implements UserService {
 
 
     public List<UserResponseDTO> findAllUserFilterExport(
-            Long id,
+            Long userId,
             String name,
             String mobilePhone,
             Date fromDate,
@@ -238,8 +276,9 @@ public class UserServiceIml implements UserService {
         // Build a specification based on the filter criteria
         Specification<UserEntity> specification = Specification.where(null);
 
-        if (id != null) {
-            specification = specification.and(UserSpecifications.idPartialMatch(String.valueOf(id)));
+        if (userId != null) {
+
+            specification = specification.and(UserSpecifications.userIdPartialMatch(String.valueOf(userId)));
         }
 
         if (name != null && !name.isEmpty()) {
@@ -263,7 +302,7 @@ public class UserServiceIml implements UserService {
 
         List<UserResponseDTO> userDTOList = userEntities.stream()
                 .map(userEntity -> new UserResponseDTO(
-                        userEntity.getId(),
+                        userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
                         userEntity.getEmail(),
