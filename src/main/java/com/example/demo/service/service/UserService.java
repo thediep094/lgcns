@@ -1,5 +1,6 @@
 package com.example.demo.service.service;
 
+import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.UserEntity;
 import org.springframework.data.domain.Page;
@@ -33,8 +34,9 @@ public interface UserService {
             String sortOrder
     );
 
-    UserResponseDTO findUserById(Long id, UserEntity updatedUser) throws Exception;
+    UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception;
+    UserLoginResponseDTO findUserByIdAndUpdate(Long id, UserEntity updatedUser) throws Exception;
     UserResponseDTO deleteUserById(Long id) throws Exception;
 
-    UserResponseDTO loginUser(UserEntity userEntity) throws Exception;
+    UserLoginResponseDTO loginUser(UserEntity userEntity) throws Exception;
 }

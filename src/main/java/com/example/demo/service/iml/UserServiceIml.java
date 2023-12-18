@@ -61,6 +61,34 @@ public class UserServiceIml implements UserService {
         }
     }
 
+    public UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception{
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional2User = userRepository.findByUserId(findUserId);
+        if (optionalUser.isPresent() && optional2User.isPresent()) {
+            UserEntity adminUser = optionalUser.get();
+            UserEntity findUser = optional2User.get();
+            if (adminUser.getRole().equals(Role.ADMIN)) {
+                String avatar = avatarServiceIml.findUrlAvatarUser(findUserId);
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
+                        findUser.getUserId(),
+                        findUser.getName(),
+                        findUser.getMobilePhone(),
+                        findUser.getEmail(),
+                        findUser.getRole(),
+                        findUser.getDate(),
+                        avatar
+                );
+                return userLoginResponseDTO;
+            } else {
+                // Passwords do not match
+                throw new Exception("Get user failed: You are not admin");
+            }
+        } else {
+            // User not found
+            throw new Exception("Login failed: User not found");
+        }
+    }
+
     public List<UserResponseDTO> findAllUser() {
         List<UserEntity> userEntities = userRepository.findAll();
         List<UserResponseDTO> userDTOList = userEntities.stream()
@@ -76,19 +104,27 @@ public class UserServiceIml implements UserService {
         return userDTOList;
     }
 
-    public UserResponseDTO findUserById(Long userId, UserEntity updatedUser) throws Exception{
+    public UserLoginResponseDTO findUserByIdAndUpdate(Long userId, UserEntity updatedUser) throws Exception{
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
-        if (optionalUser.isPresent()) {
-            UserEntity existingUser = optionalUser.get();
-
+        Optional<UserEntity> optional2User = userRepository.findByUserId(updatedUser.getUserId());
+        if (optionalUser.isPresent() && optional2User.isPresent()) {
+            UserEntity fromUser = optionalUser.get();
+            UserEntity existingUser = optional2User.get();
             // Update fields based on your requirements
-            existingUser.setName(updatedUser.getName());
-            existingUser.setMobilePhone(updatedUser.getMobilePhone());
-            existingUser.setEmail(updatedUser.getEmail());
-            // Save the updated user
-            userRepository.save(existingUser);
-            UserResponseDTO userResponseDTO = new UserResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate());
-           return userResponseDTO;
+            if(fromUser.getRole().equals(Role.ADMIN) || existingUser.getUserId().equals(userId) ) {
+
+                existingUser.setRole(updatedUser.getRole());
+                existingUser.setName(updatedUser.getName());
+                existingUser.setMobilePhone(updatedUser.getMobilePhone());
+                existingUser.setEmail(updatedUser.getEmail());
+                // Save the updated user
+                userRepository.save(existingUser);
+                String avatar = avatarServiceIml.findUrlAvatarUser(userId);
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate(), avatar);
+                return userLoginResponseDTO;
+            } else {
+                throw new Exception("You are not admin or not your account to update!");
+            }
         } else {
             // User not found
            throw new Exception("User not found");
@@ -109,6 +145,7 @@ public class UserServiceIml implements UserService {
         }
     }
 
+    @Transactional
     public UserLoginResponseDTO saveUser(UserEntity userEntity) throws Exception{
         log.debug("create user: {}", userEntity.getUserId());
 

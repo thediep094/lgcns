@@ -67,13 +67,29 @@ public class UserController {
         }
     }
 
+    //   Get User
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<ResponseObject> getUserByAdmin(@RequestBody UserEntity userEntity, @PathVariable Long userId) {
+        try {
+            UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserById(userEntity.getUserId(), userId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("success", "Login successful", userLoginResponseDTO)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", e.getMessage(), null)
+            );
+        }
+    }
+
+
 //    Update user data
     @PutMapping("/update/{userId}")
     public ResponseEntity<ResponseObject> updateUser(@PathVariable Long userId, @RequestBody UserEntity updatedUser) {
         try {
-            UserResponseDTO userResponseDTO = userServiceIml.findUserById(userId, updatedUser);
+            UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserByIdAndUpdate(userId, updatedUser);
              return ResponseEntity.status(HttpStatus.OK).body(
-                    new ResponseObject("success", "Update user successfully", userResponseDTO)
+                    new ResponseObject("success", "Update user successfully", userLoginResponseDTO)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
