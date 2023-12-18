@@ -36,7 +36,7 @@ public interface UserService {
 
     UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception;
     UserLoginResponseDTO findUserByIdAndUpdate(Long id, UserEntity updatedUser) throws Exception;
-    UserResponseDTO deleteUserById(Long id) throws Exception;
+    UserResponseDTO deleteUserById(Long id, Long requestUserId) throws Exception;
 
     UserLoginResponseDTO loginUser(UserEntity userEntity) throws Exception;
 }

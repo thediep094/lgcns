@@ -99,10 +99,10 @@ public class UserController {
     }
 
 //    Delete user
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<ResponseObject> deleteUser(@PathVariable Long userId) {
+    @PostMapping("/delete/{userId}")
+    public ResponseEntity<ResponseObject> deleteUser(@PathVariable Long userId,  @RequestBody UserEntity requestUser) {
         try {
-            UserResponseDTO userResponseDTO = userServiceIml.deleteUserById(userId);
+            UserResponseDTO userResponseDTO = userServiceIml.deleteUserById(userId, requestUser.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(
                     new ResponseObject("success", "Delete user successfully", userResponseDTO)
             );

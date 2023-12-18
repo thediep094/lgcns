@@ -61,6 +61,12 @@ public class UserServiceIml implements UserService {
         }
     }
 
+    public void checkAdmin(Long id) throws Exception {
+        if(!userRepository.findByUserId(id).get().getRole().equals(Role.ADMIN)) {
+            throw new Exception("You are not admin");
+        }
+    }
+
     public UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception{
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
         Optional<UserEntity> optional2User = userRepository.findByUserId(findUserId);
@@ -131,9 +137,9 @@ public class UserServiceIml implements UserService {
         }
     }
     @Transactional
-    public UserResponseDTO deleteUserById(Long userId) throws Exception {
+    public UserResponseDTO deleteUserById(Long userId, Long requestUserId) throws Exception {
+        checkAdmin(requestUserId);
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
-
         if (optionalUser.isPresent()) {
             userRepository.deleteByUserId(userId);
             UserEntity existingUser = optionalUser.get();
