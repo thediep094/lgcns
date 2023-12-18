@@ -1,5 +1,6 @@
 package com.example.demo.service.iml;
 
+import com.example.demo.model.dto.PasswordChangeDTO;
 import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.Role;
@@ -320,5 +321,25 @@ public class UserServiceIml implements UserService {
         return userDTOList;
     }
 
-
+    @Override
+    public Boolean changePassword(Long userId, PasswordChangeDTO passwordChangeDTO) throws Exception {
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(passwordChangeDTO.getUserId());
+        if(!userId.equals(passwordChangeDTO.getUserId())) {
+            throw new Exception("It not your account");
+        }
+        validatePassword(passwordChangeDTO.getNewPassword());
+        if(optionalUser.isPresent()) {
+            if (passwordEncoder.matches(passwordChangeDTO.getOldPassword(), optionalUser.get().getPassword())){
+                String hashedPassword = passwordEncoder.encode(passwordChangeDTO.getNewPassword());
+                UserEntity existingUser = optionalUser.get();
+                existingUser.setPassword(hashedPassword);
+                userRepository.save(existingUser);
+                return true;
+            } else {
+                throw new Exception("Old password not match");
+            }
+        } else {
+            throw new Exception("User not found");
+        }
+    }
 }

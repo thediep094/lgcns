@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.common.ResponseObject;
+import com.example.demo.model.dto.PasswordChangeDTO;
 import com.example.demo.model.dto.UserDataResponseDTO;
 import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
@@ -105,6 +106,21 @@ public class UserController {
             UserResponseDTO userResponseDTO = userServiceIml.deleteUserById(userId, requestUser.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(
                     new ResponseObject("success", "Delete user successfully", userResponseDTO)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", e.getMessage(), null)
+            );
+        }
+    }
+
+    //    Change password user
+    @PostMapping("/change-password/{userId}")
+    public ResponseEntity<ResponseObject> changePassword(@PathVariable Long userId,  @RequestBody PasswordChangeDTO passwordChangeDTO) {
+        try {
+            Boolean checkChange = userServiceIml.changePassword(userId, passwordChangeDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("success", "Change password user successfully", checkChange)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(

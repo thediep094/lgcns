@@ -1,5 +1,6 @@
 package com.example.demo.service.service;
 
+import com.example.demo.model.dto.PasswordChangeDTO;
 import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.dto.UserResponseDTO;
 import com.example.demo.model.entity.UserEntity;
@@ -22,6 +23,8 @@ public interface UserService {
             String sortBy,
             String sortOrder
     );
+
+    Boolean changePassword(Long userId, PasswordChangeDTO passwordChangeDTO) throws Exception;
     List<UserResponseDTO> findAllUserFilterExport(
             Long id,
             String name,
