@@ -1,7 +1,10 @@
 package com.example.demo.service.iml;
 
+import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.model.entity.Avatar;
+import com.example.demo.model.entity.UserEntity;
 import com.example.demo.repository.AvatarRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.service.AvatarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Slf4j
 public class AvatarServiceIml implements AvatarService {
     private final AvatarRepository avatarRepository;
+    private final UserRepository userRepository;
     @Autowired
-    public AvatarServiceIml(AvatarRepository avatarRepository) {
+    public AvatarServiceIml(AvatarRepository avatarRepository, UserRepository userRepository) {
         this.avatarRepository = avatarRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -49,7 +55,7 @@ public class AvatarServiceIml implements AvatarService {
     }
 
     @Override
-    public List<String> updateAvatar(Long userId, MultipartFile[] files) {
+    public UserLoginResponseDTO updateAvatar(Long userId, MultipartFile[] files) throws Exception{
         String imageUploadDirectory = "C:\\Users\\LG CNS\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
 
@@ -79,6 +85,22 @@ public class AvatarServiceIml implements AvatarService {
             avatar.setUrl(imageUrl);
             avatarRepository.save(avatar);
         }
-        return imageUrls;
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO();
+        if(optionalUser.isPresent()) {
+            UserEntity findUser = optionalUser.get();
+            String avatar = this.findUrlAvatarUser(userId);
+            userLoginResponseDTO = new UserLoginResponseDTO(
+                    findUser.getUserId(),
+                    findUser.getName(),
+                    findUser.getMobilePhone(),
+                    findUser.getEmail(),
+                    findUser.getRole(),
+                    findUser.getDate(),
+                    avatar
+            );
+           }
+
+        return userLoginResponseDTO;
     }
 }

@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 
 import com.example.demo.common.ResponseObject;
+import com.example.demo.model.dto.UserLoginResponseDTO;
 import com.example.demo.service.iml.AvatarServiceIml;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +55,9 @@ public class AvatarController {
     @RequestMapping("/change/{userId}")
     public ResponseEntity<ResponseObject> changeAvatar(@PathVariable Long userId, @RequestParam("file") MultipartFile[] files){
         try {
-            List<String> imagesUrl = avatarServiceIml.updateAvatar(userId, files);
+            UserLoginResponseDTO userLoginResponseDTO = avatarServiceIml.updateAvatar(userId, files);
             return ResponseEntity.ok().body(
-                    new ResponseObject("success", "Avatar(s) changed successfully", imagesUrl)
+                    new ResponseObject("success", "Avatar(s) changed successfully", userLoginResponseDTO)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
