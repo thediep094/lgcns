@@ -5,13 +5,17 @@ import com.example.demo.common.ResponseObject;
 import com.example.demo.service.iml.AvatarServiceIml;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -20,30 +24,29 @@ import java.util.List;
 public class AvatarController {
 
     private final AvatarServiceIml avatarServiceIml;
-    private final ResourceLoader resourceLoader;
+    private final String imageUploadDirectory = "C:\\Users\\LG CNS\\Downloads\\Images";
+
     @Autowired
-    public AvatarController(AvatarServiceIml avatarServiceIml, ResourceLoader resourceLoader) {
+    public AvatarController(AvatarServiceIml avatarServiceIml) {
         this.avatarServiceIml = avatarServiceIml;
-        this.resourceLoader = resourceLoader;
     }
 
     @GetMapping("/images/{imageName}")
     public ResponseEntity<Resource> getImage(@PathVariable String imageName) {
         try {
-            Resource resource = resourceLoader.getResource("classpath:/images/" + imageName);
-            log.info("Images {}", resource.getURL());
+            Path filePath = Paths.get(imageUploadDirectory).resolve(imageName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
-                System.out.println(resource);
-                return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(resource);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG) // Adjust the media type based on your image type
+                        .body(resource);
             } else {
-                // Handle the case when the image file does not exist
-                System.out.println("not exits");
                 return ResponseEntity.notFound().build();
             }
-        } catch (Exception e) {
-            // Handle the exception appropriately
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IOException e) {
+            // Handle exceptions appropriately
+            return ResponseEntity.status(500).build();
         }
     }
 

@@ -50,7 +50,7 @@ public class AvatarServiceIml implements AvatarService {
 
     @Override
     public List<String> updateAvatar(Long userId, MultipartFile[] files) {
-        String imageUploadDirectory = "src/main/resources/images";
+        String imageUploadDirectory = "C:\\Users\\LG CNS\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : files) {
