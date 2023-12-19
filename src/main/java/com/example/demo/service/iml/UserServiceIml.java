@@ -36,29 +36,62 @@ public class UserServiceIml implements UserService {
         this.avatarServiceIml = avatarServiceIml;
     }
 
+    private static boolean containsLetters(String s) {
+        return s.matches(".*[a-zA-Z].*");
+    }
+
+    private static boolean containsNumbers(String s) {
+        return s.matches(".*\\d.*");
+    }
+
+    private static boolean containsSpecialCharacters(String s) {
+        return s.matches(".*[^a-zA-Z0-9].*");
+    }
+
+    private static Integer countContain(String s) {
+        Integer count = 0;
+        if(containsLetters(s)) {
+            count += 1;
+        }
+
+        if(containsNumbers(s)) {
+            count += 1;
+        }
+
+        if(containsSpecialCharacters(s)) {
+            count += 1;
+        }
+
+        return count;
+    }
+
     private void validatePassword(String password) throws Exception {
         // Password must have at least 8 characters
         if (password.length() < 8) {
-            throw new Exception("Password must have at least 8 characters");
+            throw new Exception("Your password not formatted correctly: Password must have at least 8 characters");
         }
 
-        // Password must have at least 2 combinations if length is less than 8, or 3 combinations if length is less than 10
-        if (password.length() < 8 && !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&*]).+$")) {
-            throw new Exception("Password must have at least 2 combinations: letters, numbers, or special characters");
+        if(countContain(password) < 2) {
+            throw new Exception("Your password not formatted correctly: Password must have at least 2 combinations: letters, numbers, or special characters");
         }
 
-        if (password.length() < 10 && !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&*]).+$")) {
-            throw new Exception("Password must have at least 3 combinations: letters, numbers, or special characters");
+        // Password must have at least 10 characters if have 2 combinations, or 3 combinations need at least 8 characrers
+        if (password.length() < 10 && countContain(password) == 2) {
+            throw new Exception("Your password not formatted correctly: Password must have at least 10 characters if 2 combinations: letters, numbers, or special characters");
+        }
+
+        if (password.length() < 8 && countContain(password) == 3) {
+            throw new Exception("Your password not formatted correctly: Password must have at least 8 characters if 3 combinations: letters, numbers, or special characters");
         }
 
         // Special characters allowed are @#$%^&*
         if (!password.matches("^[a-zA-Z0-9@#$%^&*]+$")) {
-            throw new Exception("Password can only contain letters, numbers, and the special characters @#$%^&*");
+            throw new Exception("Your password not formatted correctly: Password can only contain letters, numbers, and the special characters @#$%^&*");
         }
 
         // Consecutive numbers must not be more than 3 characters
         if (password.matches(".*\\d{4,}.*")) {
-            throw new Exception("Consecutive numbers must not be more than 3 characters");
+            throw new Exception("Your password not formatted correctly: Consecutive numbers must not be more than 3 characters");
         }
     }
 
@@ -170,7 +203,7 @@ public class UserServiceIml implements UserService {
             throw new Exception("Id must be at least 4 digits long");
         }
 
-        if (!userEntity.getMobilePhone().matches("\\d+")) {
+        if (!userEntity.getMobilePhone().matches("^[0-9]+$")) {
             throw new Exception("Mobile phone number can only contain numbers");
         }
 
