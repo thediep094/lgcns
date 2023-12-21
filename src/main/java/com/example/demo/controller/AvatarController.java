@@ -25,7 +25,7 @@ import java.util.List;
 public class AvatarController {
 
     private final AvatarServiceIml avatarServiceIml;
-    private final String imageUploadDirectory = "C:\\Users\\LG CNS\\Downloads\\Images";
+    private final String imageUploadDirectory = "C:\\Users\\thedi\\Downloads\\Images";
 
     @Autowired
     public AvatarController(AvatarServiceIml avatarServiceIml) {
@@ -53,7 +53,7 @@ public class AvatarController {
 
 
     @RequestMapping("/change/{userId}")
-    public ResponseEntity<ResponseObject> changeAvatar(@PathVariable Long userId, @RequestParam("file") MultipartFile[] files){
+    public ResponseEntity<ResponseObject> changeAvatar(@PathVariable String userId, @RequestParam("file") MultipartFile[] files){
         try {
             UserLoginResponseDTO userLoginResponseDTO = avatarServiceIml.updateAvatar(userId, files);
             return ResponseEntity.ok().body(

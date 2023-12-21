@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PasswordChangeDTO {
-    Long userId;
+    String userId;
     String oldPassword;
     String newPassword;
 

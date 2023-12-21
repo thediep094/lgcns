@@ -13,7 +13,7 @@ public interface UserService {
     List<UserResponseDTO> findAllUser();
     UserResponseDTO saveUser(UserEntity userEntity) throws Exception;
     Page<UserResponseDTO> findAllUserFilter(
-            Long id,
+            String id,
             String name,
             String phoneNumber,
             Date fromDate,
@@ -24,9 +24,9 @@ public interface UserService {
             String sortOrder
     );
 
-    Boolean changePassword(Long userId, PasswordChangeDTO passwordChangeDTO) throws Exception;
+    Boolean changePassword(String userId, PasswordChangeDTO passwordChangeDTO) throws Exception;
     List<UserResponseDTO> findAllUserFilterExport(
-            Long id,
+            String id,
             String name,
             String phoneNumber,
             Date fromDate,
@@ -37,9 +37,9 @@ public interface UserService {
             String sortOrder
     );
 
-    UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception;
-    UserLoginResponseDTO findUserByIdAndUpdate(Long id, UserEntity updatedUser) throws Exception;
-    UserResponseDTO deleteUserById(Long id, Long requestUserId) throws Exception;
+    UserLoginResponseDTO findUserById(String userId, String findUserId) throws Exception;
+    UserLoginResponseDTO findUserByIdAndUpdate(String id, UserEntity updatedUser) throws Exception;
+    UserResponseDTO deleteUserById(String id, String requestUserId) throws Exception;
 
     UserLoginResponseDTO loginUser(UserEntity userEntity) throws Exception;
 }

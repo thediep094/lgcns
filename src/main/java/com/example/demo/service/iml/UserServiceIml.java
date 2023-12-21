@@ -95,13 +95,13 @@ public class UserServiceIml implements UserService {
         }
     }
 
-    public void checkAdmin(Long id) throws Exception {
+    public void checkAdmin(String id) throws Exception {
         if(!userRepository.findByUserId(id).get().getRole().equals(Role.ADMIN)) {
             throw new Exception("You are not admin");
         }
     }
 
-    public UserLoginResponseDTO findUserById(Long userId, Long findUserId) throws Exception{
+    public UserLoginResponseDTO findUserById(String userId, String findUserId) throws Exception{
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
         Optional<UserEntity> optional2User = userRepository.findByUserId(findUserId);
         if (optionalUser.isPresent() && optional2User.isPresent()) {
@@ -144,7 +144,7 @@ public class UserServiceIml implements UserService {
         return userDTOList;
     }
 
-    public UserLoginResponseDTO findUserByIdAndUpdate(Long userId, UserEntity updatedUser) throws Exception{
+    public UserLoginResponseDTO findUserByIdAndUpdate(String userId, UserEntity updatedUser) throws Exception{
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
         Optional<UserEntity> optional2User = userRepository.findByUserId(updatedUser.getUserId());
         if (optionalUser.isPresent() && optional2User.isPresent()) {
@@ -171,7 +171,7 @@ public class UserServiceIml implements UserService {
         }
     }
     @Transactional
-    public UserResponseDTO deleteUserById(Long userId, Long requestUserId) throws Exception {
+    public UserResponseDTO deleteUserById(String userId, String requestUserId) throws Exception {
         checkAdmin(requestUserId);
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
         if (optionalUser.isPresent()) {
@@ -247,7 +247,7 @@ public class UserServiceIml implements UserService {
     }
 
     public Page<UserResponseDTO> findAllUserFilter(
-            Long userId,
+            String userId,
             String name,
             String mobilePhone,
             Date fromDate,
@@ -261,7 +261,7 @@ public class UserServiceIml implements UserService {
         Specification<UserEntity> specification = Specification.where(null);
 
         if (userId != null) {
-            specification = specification.and(UserSpecifications.userIdPartialMatch(String.valueOf(userId)));
+            specification = specification.and(UserSpecifications.userIdPartialMatch(userId));
         }
 
         if (name != null && !name.isEmpty()) {
@@ -303,7 +303,7 @@ public class UserServiceIml implements UserService {
 
 
     public List<UserResponseDTO> findAllUserFilterExport(
-            Long userId,
+            String userId,
             String name,
             String mobilePhone,
             Date fromDate,
@@ -318,7 +318,7 @@ public class UserServiceIml implements UserService {
 
         if (userId != null) {
 
-            specification = specification.and(UserSpecifications.userIdPartialMatch(String.valueOf(userId)));
+            specification = specification.and(UserSpecifications.userIdPartialMatch(userId));
         }
 
         if (name != null && !name.isEmpty()) {
@@ -355,7 +355,7 @@ public class UserServiceIml implements UserService {
     }
 
     @Override
-    public Boolean changePassword(Long userId, PasswordChangeDTO passwordChangeDTO) throws Exception {
+    public Boolean changePassword(String userId, PasswordChangeDTO passwordChangeDTO) throws Exception {
         Optional<UserEntity> optionalUser = userRepository.findByUserId(passwordChangeDTO.getUserId());
         if(!userId.equals(passwordChangeDTO.getUserId())) {
             throw new Exception("It not your account");

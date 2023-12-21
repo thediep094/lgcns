@@ -33,19 +33,19 @@ public class AvatarServiceIml implements AvatarService {
     }
 
     @Override
-    public void deleteAllAvatarByUserId(Long userId) {
+    public void deleteAllAvatarByUserId(String userId) {
         log.debug("Request to delete all avatar by userId: {}", userId);
         List<Avatar> avatars = avatarRepository.findAllByUserId(userId);
         avatarRepository.deleteAll(avatars);
     }
 
-    public String findUrlAvatarUser(Long userId) {
+    public String findUrlAvatarUser(String userId) {
         log.debug("Request to find one avatar by userId: {}", userId);
         Avatar avatar = avatarRepository.findTopByUserId(userId);
         return avatar.getUrl();
     }
 
-    public String saveStaterImage(Long userId) {
+    public String saveStaterImage(String userId) {
         log.debug("Request to save one avatar for userId stater: {}", userId);
         Avatar avatar = new Avatar();
         avatar.setUserId(userId);
@@ -55,8 +55,8 @@ public class AvatarServiceIml implements AvatarService {
     }
 
     @Override
-    public UserLoginResponseDTO updateAvatar(Long userId, MultipartFile[] files) throws Exception{
-        String imageUploadDirectory = "C:\\Users\\LG CNS\\Downloads\\Images";
+    public UserLoginResponseDTO updateAvatar(String userId, MultipartFile[] files) throws Exception{
+        String imageUploadDirectory = "C:\\Users\\thedi\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : files) {

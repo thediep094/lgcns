@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
-    UserEntity findTopByUserId(Long userId);
-    Optional<UserEntity> findByUserId(Long userId);
-    void deleteByUserId(Long userId);
+    UserEntity findTopByUserId(String userId);
+    Optional<UserEntity> findByUserId(String userId);
+    void deleteByUserId(String userId);
 }

@@ -16,7 +16,7 @@ public class UserLoginResponseDTO extends UserResponseDTO{
     public UserLoginResponseDTO() {
     }
 
-    public UserLoginResponseDTO(Long id, String name, String mobilePhone, String email, Role role, Date date, String avatar) {
+    public UserLoginResponseDTO(String id, String name, String mobilePhone, String email, Role role, Date date, String avatar) {
         super(id, name, mobilePhone, email, role, date);
         this.avatar = avatar;
     }

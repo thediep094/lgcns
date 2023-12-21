@@ -70,7 +70,7 @@ public class UserController {
 
     //   Get User
     @PostMapping("/user/{userId}")
-    public ResponseEntity<ResponseObject> getUserByAdmin(@RequestBody UserEntity userEntity, @PathVariable Long userId) {
+    public ResponseEntity<ResponseObject> getUserByAdmin(@RequestBody UserEntity userEntity, @PathVariable String userId) {
         try {
             UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserById(userEntity.getUserId(), userId);
             return ResponseEntity.status(HttpStatus.OK).body(
@@ -86,7 +86,7 @@ public class UserController {
 
 //    Update user data
     @PutMapping("/update/{userId}")
-    public ResponseEntity<ResponseObject> updateUser(@PathVariable Long userId, @RequestBody UserEntity updatedUser) {
+    public ResponseEntity<ResponseObject> updateUser(@PathVariable String userId, @RequestBody UserEntity updatedUser) {
         try {
             UserLoginResponseDTO userLoginResponseDTO = userServiceIml.findUserByIdAndUpdate(userId, updatedUser);
              return ResponseEntity.status(HttpStatus.OK).body(
@@ -101,7 +101,7 @@ public class UserController {
 
 //    Delete user
     @PostMapping("/delete/{userId}")
-    public ResponseEntity<ResponseObject> deleteUser(@PathVariable Long userId,  @RequestBody UserEntity requestUser) {
+    public ResponseEntity<ResponseObject> deleteUser(@PathVariable String userId,  @RequestBody UserEntity requestUser) {
         try {
             UserResponseDTO userResponseDTO = userServiceIml.deleteUserById(userId, requestUser.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body(
@@ -116,7 +116,7 @@ public class UserController {
 
     //    Change password user
     @PostMapping("/change-password/{userId}")
-    public ResponseEntity<ResponseObject> changePassword(@PathVariable Long userId,  @RequestBody PasswordChangeDTO passwordChangeDTO) {
+    public ResponseEntity<ResponseObject> changePassword(@PathVariable String userId,  @RequestBody PasswordChangeDTO passwordChangeDTO) {
         try {
             Boolean checkChange = userServiceIml.changePassword(userId, passwordChangeDTO);
             return ResponseEntity.status(HttpStatus.OK).body(
@@ -132,7 +132,7 @@ public class UserController {
 //    Get all user using filter
     @PostMapping("/getUser")
     public ResponseEntity<ResponseObject> getUserByFilter(
-            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String mobilePhone,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
@@ -159,7 +159,7 @@ public class UserController {
 
     @PostMapping("/exportToExcel")
     public ResponseEntity<String> exportToExcel(HttpServletResponse response,
-                                                @RequestParam(required = false) Long userId,
+                                                @RequestParam(required = false) String userId,
                                                 @RequestParam(required = false) String name,
                                                 @RequestParam(required = false) String mobilePhone,
                                                 @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
