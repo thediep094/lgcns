@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AvatarRepository extends JpaRepository<Avatar, Long> {
-    List<Avatar> findAllByUserId(String userId);
-    Avatar findTopByUserId(String userId);
+    List<Avatar> findAllByMemberId(Long userId);
+    Avatar findFirstByMemberId(Long userId);
 }

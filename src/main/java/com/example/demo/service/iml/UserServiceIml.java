@@ -108,7 +108,7 @@ public class UserServiceIml implements UserService {
             UserEntity adminUser = optionalUser.get();
             UserEntity findUser = optional2User.get();
             if (adminUser.getRole().equals(Role.ADMIN)) {
-                String avatar = avatarServiceIml.findUrlAvatarUser(findUserId);
+                String avatar = avatarServiceIml.findUrlAvatarUser(findUser.getMemberId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
                         findUser.getUserId(),
                         findUser.getName(),
@@ -159,7 +159,7 @@ public class UserServiceIml implements UserService {
                 existingUser.setEmail(updatedUser.getEmail());
                 // Save the updated user
                 userRepository.save(existingUser);
-                String avatar = avatarServiceIml.findUrlAvatarUser(userId);
+                String avatar = avatarServiceIml.findUrlAvatarUser(existingUser.getMemberId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate(), avatar);
                 return userLoginResponseDTO;
             } else {
@@ -177,7 +177,7 @@ public class UserServiceIml implements UserService {
         if (optionalUser.isPresent()) {
             userRepository.deleteByUserId(userId);
             UserEntity existingUser = optionalUser.get();
-            avatarServiceIml.deleteAllAvatarByUserId(userId);
+            avatarServiceIml.deleteAllAvatarByMemberId(optionalUser.get().getMemberId());
             return new UserResponseDTO(existingUser.getUserId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
         } else {
             // User not found
@@ -214,7 +214,7 @@ public class UserServiceIml implements UserService {
         userEntity.setPassword(hashedPassword);
         userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
         userRepository.save(userEntity);
-        String avatar = avatarServiceIml.saveStaterImage(userEntity.getUserId());
+        String avatar = avatarServiceIml.saveStaterImage(userEntity.getMemberId());
         UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getUserId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
         return userLoginResponseDTO;
     }
@@ -225,7 +225,7 @@ public class UserServiceIml implements UserService {
         if (optionalUser.isPresent()) {
             UserEntity user = optionalUser.get();
             if (passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
-                String avatar = avatarServiceIml.findUrlAvatarUser(loginUser.getUserId());
+                String avatar = avatarServiceIml.findUrlAvatarUser(optionalUser.get().getMemberId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
                         user.getUserId(),
                         user.getName(),

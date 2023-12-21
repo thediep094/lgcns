@@ -33,22 +33,22 @@ public class AvatarServiceIml implements AvatarService {
     }
 
     @Override
-    public void deleteAllAvatarByUserId(String userId) {
-        log.debug("Request to delete all avatar by userId: {}", userId);
-        List<Avatar> avatars = avatarRepository.findAllByUserId(userId);
+    public void deleteAllAvatarByMemberId(Long memberId) {
+        log.debug("Request to delete all avatar by memberId: {}", memberId);
+        List<Avatar> avatars = avatarRepository.findAllByMemberId(memberId);
         avatarRepository.deleteAll(avatars);
     }
 
-    public String findUrlAvatarUser(String userId) {
-        log.debug("Request to find one avatar by userId: {}", userId);
-        Avatar avatar = avatarRepository.findTopByUserId(userId);
+    public String findUrlAvatarUser(Long memberId) {
+        log.debug("Request to find one avatar by memberId: {}", memberId);
+        Avatar avatar = avatarRepository.findFirstByMemberId(memberId);
         return avatar.getUrl();
     }
 
-    public String saveStaterImage(String userId) {
-        log.debug("Request to save one avatar for userId stater: {}", userId);
+    public String saveStaterImage(Long memberId) {
+        log.debug("Request to save one avatar for memberId stater: {}", memberId);
         Avatar avatar = new Avatar();
-        avatar.setUserId(userId);
+        avatar.setMemberId(memberId);
         avatar.setUrl("user.jpg");
         Avatar responseAvatar = avatarRepository.save(avatar);
         return responseAvatar.getUrl();
@@ -75,32 +75,36 @@ public class AvatarServiceIml implements AvatarService {
                 log.error("Failed to upload image: {}", e.getMessage());
             }
         }
-        deleteAllAvatarByUserId(userId);
-        // Save the image URLs to your database or perform any necessary operations
-        for (String imageUrl : imageUrls) {
-            Avatar avatar = new Avatar();
-            log.debug("Userid: {}", userId);
-            log.debug("imageUrl: {}", imageUrl);
-            avatar.setUserId(userId);
-            avatar.setUrl(imageUrl);
-            avatarRepository.save(avatar);
-        }
-        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
-        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO();
-        if(optionalUser.isPresent()) {
-            UserEntity findUser = optionalUser.get();
-            String avatar = this.findUrlAvatarUser(userId);
-            userLoginResponseDTO = new UserLoginResponseDTO(
-                    findUser.getUserId(),
-                    findUser.getName(),
-                    findUser.getMobilePhone(),
-                    findUser.getEmail(),
-                    findUser.getRole(),
-                    findUser.getDate(),
-                    avatar
-            );
-           }
 
-        return userLoginResponseDTO;
+        Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+        if(optionalUser.isPresent()) {
+            deleteAllAvatarByMemberId(optionalUser.get().getMemberId());
+            // Save the image URLs to your database or perform any necessary operations
+            for (String imageUrl : imageUrls) {
+                Avatar avatar = new Avatar();
+                log.debug("memberId: {}", optionalUser.get().getMemberId());
+                log.debug("imageUrl: {}", imageUrl);
+                avatar.setMemberId(optionalUser.get().getMemberId());
+                avatar.setUrl(imageUrl);
+                avatarRepository.save(avatar);
+            }
+            UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO();
+            if(optionalUser.isPresent()) {
+                UserEntity findUser = optionalUser.get();
+                String avatar = this.findUrlAvatarUser(findUser.getMemberId());
+                userLoginResponseDTO = new UserLoginResponseDTO(
+                        findUser.getUserId(),
+                        findUser.getName(),
+                        findUser.getMobilePhone(),
+                        findUser.getEmail(),
+                        findUser.getRole(),
+                        findUser.getDate(),
+                        avatar
+                );
+            }
+
+            return userLoginResponseDTO;
+        }
+    return null;
     }
 }

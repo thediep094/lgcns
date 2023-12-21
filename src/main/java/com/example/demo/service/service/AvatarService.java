@@ -6,8 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface AvatarService {
-    UserLoginResponseDTO updateAvatar(String userId, MultipartFile[] files) throws Exception;
-    void deleteAllAvatarByUserId(String userId);
-    String saveStaterImage(String userId);
+    UserLoginResponseDTO updateAvatar(String memberId, MultipartFile[] files) throws Exception;
+    void deleteAllAvatarByMemberId(Long memberId);
+    String saveStaterImage(Long memberId);
 
 }

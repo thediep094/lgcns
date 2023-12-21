@@ -20,6 +20,6 @@ public class Avatar implements Serializable {
     @Column(name = "url")
     private String url;
 
-    @Column(name = "user_id")
-    private String userId;
+    @Column(name = "member_id")
+    private Long memberId;
 }
