@@ -25,7 +25,7 @@ import java.util.List;
 public class AvatarController {
 
     private final AvatarServiceIml avatarServiceIml;
-    private final String imageUploadDirectory = "C:\\Users\\thedi\\Downloads\\Images";
+    private final String imageUploadDirectory = "C:\\Users\\63200202\\Downloads\\Images";
 
     @Autowired
     public AvatarController(AvatarServiceIml avatarServiceIml) {
