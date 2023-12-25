@@ -4,6 +4,7 @@ import com.example.demo.model.entity.Avatar;
 import com.example.demo.model.entity.ProductImages;
 import com.example.demo.repository.ProductImagesRepository;
 import com.example.demo.service.service.ProductImagesService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,13 @@ public class ProductImagesIml implements ProductImagesService {
         this.productImagesRepository = productImagesRepository;
     }
 
+    public List<ProductImages> findAllProductImages(Long productId) {
+        List<ProductImages> productImages = productImagesRepository.findAllByProductId(productId);
+        return productImages;
+    }
+
     public List<ProductImages> saveProductImages(MultipartFile[] files, Long productId) {
-        String imageUploadDirectory = "C:\\Users\\63200202\\Downloads\\Images\\Products";
+        String imageUploadDirectory = "C:\\Users\\Acer\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
         List<ProductImages> productImagesList = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -58,5 +64,14 @@ public class ProductImagesIml implements ProductImagesService {
             productImagesList.add(productImages);
         }
         return productImagesList;
+    }
+
+    @Transactional
+    public void deleteProductImagesByProductId(Long productId) {
+        ProductImages productImages = productImagesRepository.findFirstByProductId(productId);
+        if(productImages != null) {
+            productImagesRepository.deleteAllByProductId(productId);
+        }
+
     }
 }
