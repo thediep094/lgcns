@@ -110,6 +110,7 @@ public class UserServiceIml implements UserService {
             if (adminUser.getRole().equals(Role.ADMIN)) {
                 String avatar = avatarServiceIml.findUrlAvatarUser(findUser.getMemberId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
+                        findUser.getMemberId(),
                         findUser.getUserId(),
                         findUser.getName(),
                         findUser.getMobilePhone(),
@@ -133,6 +134,7 @@ public class UserServiceIml implements UserService {
         List<UserEntity> userEntities = userRepository.findAll();
         List<UserResponseDTO> userDTOList = userEntities.stream()
                 .map(userEntity -> new UserResponseDTO(
+                        userEntity.getMemberId(),
                         userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
@@ -160,7 +162,7 @@ public class UserServiceIml implements UserService {
                 // Save the updated user
                 userRepository.save(existingUser);
                 String avatar = avatarServiceIml.findUrlAvatarUser(existingUser.getMemberId());
-                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate(), avatar);
+                UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(updatedUser.getMemberId(), userId, updatedUser.getName(), updatedUser.getMobilePhone(), updatedUser.getEmail(), existingUser.getRole(), existingUser.getDate(), avatar);
                 return userLoginResponseDTO;
             } else {
                 throw new Exception("You are not admin or not your account to update!");
@@ -178,7 +180,7 @@ public class UserServiceIml implements UserService {
             userRepository.deleteByUserId(userId);
             UserEntity existingUser = optionalUser.get();
             avatarServiceIml.deleteAllAvatarByMemberId(optionalUser.get().getMemberId());
-            return new UserResponseDTO(existingUser.getUserId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
+            return new UserResponseDTO(existingUser.getMemberId(), existingUser.getUserId(), existingUser.getName(), existingUser.getMobilePhone(), existingUser.getEmail(), existingUser.getRole(), existingUser.getDate());
         } else {
             // User not found
             throw new Exception("User nor found");
@@ -215,7 +217,7 @@ public class UserServiceIml implements UserService {
         userEntity.setDate(new java.sql.Date(System.currentTimeMillis()));
         userRepository.save(userEntity);
         String avatar = avatarServiceIml.saveStaterImage(userEntity.getMemberId());
-        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getUserId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
+        UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(userEntity.getMemberId(),userEntity.getUserId(), userEntity.getName(), userEntity.getMobilePhone(), userEntity.getEmail(),userEntity.getRole(), userEntity.getDate(), avatar);
         return userLoginResponseDTO;
     }
 
@@ -227,6 +229,7 @@ public class UserServiceIml implements UserService {
             if (passwordEncoder.matches(loginUser.getPassword(), user.getPassword())) {
                 String avatar = avatarServiceIml.findUrlAvatarUser(optionalUser.get().getMemberId());
                 UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO(
+                        user.getMemberId(),
                         user.getUserId(),
                         user.getName(),
                         user.getMobilePhone(),
@@ -288,6 +291,7 @@ public class UserServiceIml implements UserService {
 
         List<UserResponseDTO> userDTOList = userEntitiesPage.getContent().stream()
                 .map(userEntity -> new UserResponseDTO(
+                        userEntity.getMemberId(),
                         userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),
@@ -342,6 +346,7 @@ public class UserServiceIml implements UserService {
 
         List<UserResponseDTO> userDTOList = userEntities.stream()
                 .map(userEntity -> new UserResponseDTO(
+                        userEntity.getMemberId(),
                         userEntity.getUserId(),
                         userEntity.getName(),
                         userEntity.getMobilePhone(),

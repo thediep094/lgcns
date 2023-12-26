@@ -91,7 +91,7 @@ public class ProductController {
 
 //    Update product
     @PutMapping("/update/{productId}")
-    public ResponseEntity<ResponseObject> updateProduct(@ModelAttribute Product product,@RequestParam("file")MultipartFile[] files) {
+    public ResponseEntity<ResponseObject> updateProduct(@ModelAttribute Product product,@RequestParam(value = "file", required = false)MultipartFile[] files) {
         try {
             ProductResponseDTO saveProduct = productIml.updateProduct(product, files);
             return ResponseEntity.status(HttpStatus.OK).body(

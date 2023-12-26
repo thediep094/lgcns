@@ -93,6 +93,7 @@ public class AvatarServiceIml implements AvatarService {
                 UserEntity findUser = optionalUser.get();
                 String avatar = this.findUrlAvatarUser(findUser.getMemberId());
                 userLoginResponseDTO = new UserLoginResponseDTO(
+                        findUser.getMemberId(),
                         findUser.getUserId(),
                         findUser.getName(),
                         findUser.getMobilePhone(),

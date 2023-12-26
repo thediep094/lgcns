@@ -82,7 +82,12 @@ public class ProductIml implements ProductService {
         Optional<Product> findProduct = productRepository.findById(product.getId());
         if(findProduct.isPresent()) {
             Product newProduct = productRepository.save(product);
-            List<ProductImages> productImages = productImagesIml.updateProductImagesByProductId(product.getId(), files);
+            List<ProductImages> productImages;
+            if(files != null) {
+                productImages = productImagesIml.updateProductImagesByProductId(product.getId(), files);
+            } else {
+                productImages = productImagesIml.findAllProductImages(product.getId());
+            }
             ProductResponseDTO productResponseDTO = new ProductResponseDTO(newProduct, productImages);
             return productResponseDTO;
         } else {
