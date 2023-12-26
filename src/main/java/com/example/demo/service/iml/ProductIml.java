@@ -21,17 +21,20 @@ import java.util.Optional;
 @Service
 public class ProductIml implements ProductService {
     private final ProductRepository productRepository;
-    private final ProductImagesIml productImagesIml;    @Autowired
-    public ProductIml(ProductRepository productRepository, ProductImagesIml productImagesIml) {
+    private final ProductImagesIml productImagesIml;
+    private final UserServiceIml userServiceIml;
+    @Autowired
+    public ProductIml(ProductRepository productRepository, ProductImagesIml productImagesIml, UserServiceIml userServiceIml) {
         this.productRepository = productRepository;
         this.productImagesIml = productImagesIml;
+        this.userServiceIml = userServiceIml;
     }
 
-    public ProductResponseDTO saveProduct(Product product, MultipartFile[] files) {
+    public ProductResponseDTO saveProduct(Product product, MultipartFile[] files) throws Exception{
+        userServiceIml.checkAdminByMemberId(product.getMemberId());
         Product saveProduct = productRepository.save(product);
         List<ProductImages> saveProductImages = productImagesIml.saveProductImages(files, saveProduct.getId());
         ProductResponseDTO productResponseDTO = new ProductResponseDTO(saveProduct, saveProductImages);
-
         return productResponseDTO;
     }
 
@@ -79,6 +82,7 @@ public class ProductIml implements ProductService {
     }
 
     public ProductResponseDTO updateProduct(Product product, MultipartFile[] files) throws Exception{
+        userServiceIml.checkAdminByMemberId(product.getMemberId());
         Optional<Product> findProduct = productRepository.findById(product.getId());
         if(findProduct.isPresent()) {
             Product newProduct = productRepository.save(product);

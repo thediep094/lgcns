@@ -101,6 +101,12 @@ public class UserServiceIml implements UserService {
         }
     }
 
+    public void checkAdminByMemberId(Long memberId) throws Exception {
+        if(!userRepository.findByMemberId(memberId).get().getRole().equals(Role.ADMIN)) {
+            throw new Exception("You are not admin");
+        }
+    }
+
     public UserLoginResponseDTO findUserById(String userId, String findUserId) throws Exception{
         Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
         Optional<UserEntity> optional2User = userRepository.findByUserId(findUserId);

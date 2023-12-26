@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
     UserEntity findTopByUserId(String userId);
     Optional<UserEntity> findByUserId(String userId);
+    Optional<UserEntity> findByMemberId(Long memberId);
     void deleteByUserId(String userId);
 }
