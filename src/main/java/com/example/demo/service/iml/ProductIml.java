@@ -47,6 +47,18 @@ public class ProductIml implements ProductService {
         }
     }
 
+    public ProductResponseDTO getProductByProductId(Long productId) throws Exception{
+        Optional<Product> product = productRepository.findById(productId);
+        if(product.isPresent()) {
+            Product exitstingProduct = product.get();
+            List<ProductImages> productImages = productImagesIml.findAllProductImages(productId);
+            ProductResponseDTO productResponseDTO = new ProductResponseDTO(exitstingProduct,productImages);
+            return productResponseDTO;
+        } else {
+            throw new Exception("Product not found!!");
+        }
+    }
+
     public Page<ProductResponseDTO> findAllProductsFilter(String name,
                                                           int page,
                                                           int size) {

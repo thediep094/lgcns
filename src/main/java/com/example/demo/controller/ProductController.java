@@ -27,9 +27,22 @@ public class ProductController {
     public ProductController(ProductIml productIml) {
         this.productIml = productIml;
     }
+//    Get product by product id
+    @GetMapping("/get/{productId}")
+    public ResponseEntity<ResponseObject> getProduct(@PathVariable Long productId) {
+        try{
+        ProductResponseDTO productResponseDTOS = productIml.getProductByProductId(productId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("success", "Get products successful", productResponseDTOS)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", "Internal Server Error: " + e.getMessage(), null)
+            );        }
+    }
 
 //    Get all products and filter by name with pagination
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<ResponseObject> getProducts(@RequestParam(required = false) String name,
                                                       @RequestParam(defaultValue = "0",required = false) int page,
                                                       @RequestParam(defaultValue = "10", required = false) int size) {
@@ -82,7 +95,7 @@ public class ProductController {
         try {
             ProductResponseDTO saveProduct = productIml.updateProduct(product, files);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    new ResponseObject("success", "Create product successful", saveProduct)
+                    new ResponseObject("success", "Edit product successful", saveProduct)
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(

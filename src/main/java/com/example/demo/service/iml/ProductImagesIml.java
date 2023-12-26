@@ -28,6 +28,7 @@ public class ProductImagesIml implements ProductImagesService {
         this.productImagesRepository = productImagesRepository;
     }
 
+
     public List<ProductImages> findAllProductImages(Long productId) {
         List<ProductImages> productImages = productImagesRepository.findAllByProductId(productId);
         return productImages;
