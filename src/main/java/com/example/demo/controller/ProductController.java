@@ -75,4 +75,20 @@ public class ProductController {
             );
         }
     }
+
+//    Update product
+    @PutMapping("/update/{productId}")
+    public ResponseEntity<ResponseObject> updateProduct(@ModelAttribute Product product,@RequestParam("file")MultipartFile[] files) {
+        try {
+            ProductResponseDTO saveProduct = productIml.updateProduct(product, files);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject("success", "Create product successful", saveProduct)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject("error", e.getMessage(), null)
+            );
+        }
+    }
+
 }

@@ -65,4 +65,16 @@ public class ProductIml implements ProductService {
             return productResponseDTO;
         });
     }
+
+    public ProductResponseDTO updateProduct(Product product, MultipartFile[] files) throws Exception{
+        Optional<Product> findProduct = productRepository.findById(product.getId());
+        if(findProduct.isPresent()) {
+            Product newProduct = productRepository.save(product);
+            List<ProductImages> productImages = productImagesIml.updateProductImagesByProductId(product.getId(), files);
+            ProductResponseDTO productResponseDTO = new ProductResponseDTO(newProduct, productImages);
+            return productResponseDTO;
+        } else {
+            throw new Exception("Product not exits!!");
+        }
+    }
 }

@@ -7,4 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ProductService {
     ProductResponseDTO saveProduct(Product product, MultipartFile[] files);
     Product deleteProductById(Long productId) throws Exception;
+    ProductResponseDTO updateProduct(Product product, MultipartFile[] files) throws Exception;
 }

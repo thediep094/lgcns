@@ -34,7 +34,7 @@ public class ProductImagesIml implements ProductImagesService {
     }
 
     public List<ProductImages> saveProductImages(MultipartFile[] files, Long productId) {
-        String imageUploadDirectory = "C:\\Users\\Acer\\Downloads\\Images";
+        String imageUploadDirectory = "C:\\Users\\63200202\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
         List<ProductImages> productImagesList = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -73,5 +73,12 @@ public class ProductImagesIml implements ProductImagesService {
             productImagesRepository.deleteAllByProductId(productId);
         }
 
+    }
+
+    @Transactional
+    public List<ProductImages> updateProductImagesByProductId(Long productId, MultipartFile[] files) {
+        this.deleteProductImagesByProductId(productId);
+        List<ProductImages> productImages = this.saveProductImages(files, productId);
+        return productImages;
     }
 }
