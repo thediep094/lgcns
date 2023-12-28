@@ -56,7 +56,7 @@ public class AvatarServiceIml implements AvatarService {
 
     @Override
     public UserLoginResponseDTO updateAvatar(String userId, MultipartFile[] files) throws Exception{
-        String imageUploadDirectory = "C:\\Users\\63200202\\Downloads\\Images";
+        String imageUploadDirectory = System.getProperty("user.home") + "\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : files) {

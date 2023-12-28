@@ -35,7 +35,7 @@ public class ProductImagesIml implements ProductImagesService {
     }
 
     public List<ProductImages> saveProductImages(MultipartFile[] files, Long productId) {
-        String imageUploadDirectory = "C:\\Users\\63200202\\Downloads\\Images";
+        String imageUploadDirectory = System.getProperty("user.home") + "\\Downloads\\Images";
         List<String> imageUrls = new ArrayList<>();
         List<ProductImages> productImagesList = new ArrayList<>();
         for (MultipartFile file : files) {
