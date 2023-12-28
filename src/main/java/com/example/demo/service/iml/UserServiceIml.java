@@ -207,7 +207,7 @@ public class UserServiceIml implements UserService {
             throw new Exception("Name must be a single word containing only letters");
         }
 
-        if(String.valueOf(userEntity.getUserId()).length() < 4) {
+        if(userEntity.getUserId() == null || String.valueOf(userEntity.getUserId()).length() < 4) {
             throw new Exception("Id must be at least 4 digits long");
         }
 

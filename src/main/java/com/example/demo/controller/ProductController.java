@@ -63,6 +63,7 @@ public class ProductController {
     @PostMapping("/create")
     public ResponseEntity<ResponseObject> createProduct(@ModelAttribute Product product, @RequestParam("file")MultipartFile[] files) {
         try {
+            System.out.println("Create");
             ProductResponseDTO saveProduct = productIml.saveProduct(product, files);
             return ResponseEntity.status(HttpStatus.OK).body(
                     new ResponseObject("success", "Create product successful", saveProduct)
